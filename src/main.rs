@@ -1,5 +1,5 @@
 use dominion::game::prelude::*;
-use dominion_server::api::{ClientMessage, ServerMessage};
+use dominion_server::prelude::*;
 
 use std::sync::{Arc, Mutex};
 
@@ -25,14 +25,18 @@ pub async fn main() -> Result<()> {
     let socket2 = TcpStream::from_std(socket2)?;
 
     let length_delimited = FramedRead::new(socket, LengthDelimitedCodec::new());
-    let mut deserialized = tokio_serde::SymmetricallyFramed::new(
-        length_delimited,
-        SymmetricalJson::<ServerMessage>::default(),
-    );
+    let mut deserialized: ServerMessageReceiver =
+        tokio_serde::SymmetricallyFramed::new(
+            length_delimited,
+            SymmetricalJson::<ServerMessage>::default(),
+        );
 
     let length_delimited = FramedWrite::new(socket2, LengthDelimitedCodec::new());
-    let mut serialized =
-        tokio_serde::SymmetricallyFramed::new(length_delimited, SymmetricalJson::default());
+    let mut serialized: ValueSender =
+        tokio_serde::SymmetricallyFramed::new(
+            length_delimited,
+            SymmetricalJson::default()
+        );
 
     let game_state = Arc::new(Mutex::new(PartialGame::default()));
     let game_state2 = game_state.clone();
