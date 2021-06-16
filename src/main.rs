@@ -59,6 +59,11 @@ pub async fn main() -> Result<()> {
                     let mut old_state = game_state.lock().unwrap();
                     *old_state = state;
                 }
+                ServerMessage::IllegalPlay { card, reason } => {
+                    match reason {
+                        _ => println!("You can't play {} here", card),
+                    }
+                }
                 _ => {
                     println!("Got a message from the server that the client couldn't understand!")
                 }
