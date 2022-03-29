@@ -1,4 +1,4 @@
-use dominion::game::prelude::*;
+use dominion::prelude::*;
 use dominion_server::prelude::*;
 
 use std::sync::{Arc, Mutex};
@@ -65,6 +65,7 @@ pub async fn main() -> Result<()> {
                 }
                 ServerMessage::IllegalPlay { card, reason } => {
                     match reason {
+                        DominionError::WrongPhase => println!("You can't do that during this phase"),
                         _ => println!("You can't play {} here", card),
                     }
                 }
@@ -126,6 +127,12 @@ pub async fn main() -> Result<()> {
                                 println!("Couldn't find any card named {} in hand!", card_name)
                             }
                         }
+                    }
+                    "pass" => {
+                        let state = game_state2.lock().unwrap();
+                        serialized
+                            .send(serde_json::to_value(&ClientMessage::NextPhase)?)
+                            .await?;
                     }
                     _ => println!("Couldn't understand input!")
                 }
